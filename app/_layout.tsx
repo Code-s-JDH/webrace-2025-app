@@ -46,13 +46,12 @@ export default function RootLayout() {
           <Stack.Screen 
             name="order/[id]" 
             options={{ 
-              headerShown: true,
               headerTitle: "Detail zásilky",
-              headerBackButtonDisplayMode: "minimal",
+              // Use the system back button by default
+              headerBackVisible: true,
             }} 
           />
           <Stack.Screen name="+not-found" />
-          <Stack.Screen name="scanner" options={{ headerShown: true, headerTitle: "Skenování kódu" }} />
         </Stack>
         <StatusBar style="auto" />
       </ThemeProvider>

@@ -138,25 +138,11 @@ export default function OrderDetail() {
           headerTitleStyle: {
             fontFamily: 'Outfit',
           },
-          headerLeft: Platform.OS === 'ios' ? undefined : () => (
-            <Pressable onPress={() => router.back()} style={{ marginRight: 16 }}>
-              <MaterialIcons name="arrow-back" size={24} color={TEXT_COLOR} />
-            </Pressable>
-          ),
+          // Remove the custom headerLeft since it causes duplicate back buttons
         }} 
       />
       <View style={styles.container}>
         <ScrollView>
-          {/* Only show custom back button on Android, iOS will use the system back button */}
-          {Platform.OS === 'android' && (
-            <View style={styles.header}>
-              <Pressable onPress={() => router.back()} style={styles.backButton}>
-                <MaterialIcons name="arrow-back" size={24} color={TEXT_COLOR} />
-                <Text style={styles.backButtonText}>Zpět</Text>
-              </Pressable>
-            </View>
-          )}
-
           {/* Order title and status */}
           <View style={styles.section}>
             <Text style={styles.title}>{order.title}</Text>
@@ -193,21 +179,6 @@ export default function OrderDetail() {
             </View>
           </View>
 
-          {/* Delivery history */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Historie zásilky</Text>
-            {order.history.map((event, index) => (
-              <View key={index} style={styles.historyItem}>
-                <View style={styles.historyDot} />
-                <View style={styles.historyContent}>
-                  <Text style={styles.historyDate}>{event.date}</Text>
-                  <Text style={styles.historyStatus}>{event.status}</Text>
-                  <Text style={styles.historyLocation}>{event.location}</Text>
-                </View>
-                {index < order.history.length - 1 && <View style={styles.historyLine} />}
-              </View>
-            ))}
-          </View>
 
           {/* Action buttons */}
           <View style={styles.actionSection}>

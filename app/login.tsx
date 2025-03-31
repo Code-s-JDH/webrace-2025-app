@@ -36,20 +36,22 @@ export default function Login() {
 
       const data = await response.json();
 
-      if (data.success && data.data) {
-        // Ensure data is stringified before storage
-        await login(data.data.token);
+      if (!response.ok) {
+        Alert.alert('Error', data.message || `Přihlášení selhalo (${response.status})`);
+        return;
+      }
+
+      if (data.accessToken) {
+        await login(data.accessToken);
         router.replace('/(tabs)');
       } else {
-        Alert.alert(
-          'Error', 
-          data.message || 'Neplatné přihlašovací údaje'
-        );
+        Alert.alert('Error', 'Přihlášení úspěšné, ale token nebyl poskytnut');
       }
+
     } catch (error) {
       console.error('Error:', error);
       Alert.alert(
-        'Error', 
+        'Error',
         'Nemáte připojení k internetu nebo server je nedostupný'
       );
     } finally {
@@ -97,8 +99,8 @@ export default function Login() {
       ) : (
         <>
           <Button title="přihlásit se" onPress={handleLogin} />
-          <TouchableOpacity 
-            style={styles.testLoginButton} 
+          <TouchableOpacity
+            style={styles.testLoginButton}
             onPress={handleTestLogin}
             disabled={isLoading}
           >
