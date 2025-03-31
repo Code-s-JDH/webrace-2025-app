@@ -94,10 +94,10 @@ export default function ProfileScreen() {
           
           <Pressable 
             style={styles.menuItem} 
-            onPress={() => navigateToSection('/courier/active-orders')}
+            onPress={() => navigateToSection('/courier/manage-orders')}
           >
             <MaterialIcons name="delivery-dining" size={24} color={TEXT_COLOR} />
-            <ThemedText style={styles.menuItemText}>Aktivní objednávky</ThemedText>
+            <ThemedText style={styles.menuItemText}>Správa zásilek</ThemedText>
           </Pressable>
           
           <Pressable 

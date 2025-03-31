@@ -11,17 +11,28 @@ type HistoryEvent = {
   location: string;
 };
 
+// Update types to match our model
 type Order = {
   _id: string;
   title: string;
-  status: string;
-  estimatedTime: string;
   desc: string;
-  recipient: string;
+  status: string;
+  userId: string;
+  estimatedTime: string;
+  courierId?: string;
   address: string;
-  phoneNumber: string;
-  trackingCode: string;
+  postal: string;
+  gps?: string;
+  weight: number;
+  size: {
+    x: number;
+    y: number;
+    z: number;
+  };
   history: HistoryEvent[];
+  recipient?: string; // Assuming recipient info comes from user table
+  phoneNumber?: string; // Assuming phone number comes from user table
+  trackingCode?: string; // If this exists in your model
 };
 
 // Sample hardcoded delivery/package data (same as in index.tsx)
@@ -31,9 +42,15 @@ const sampleOrders: Order[] = [
     title: 'Balík #4385 - Praha',
     status: 'Připraveno k vyzvednutí',
     estimatedTime: '14:30 - 15:00',
-    desc: 'Elektronika, 3.2kg, Prioritní doručení',
+    desc: 'Elektronika, Prioritní doručení',
+    userId: 'user123',
+    courierId: 'courier456',
+    address: 'Dlouhá 123, Praha 1',
+    postal: '110 00',
+    gps: '50.0880400,14.4207600',
+    weight: 3.2,
+    size: { x: 40, y: 30, z: 20 },
     recipient: 'Jan Novák',
-    address: 'Dlouhá 123, Praha 1, 110 00',
     phoneNumber: '+420 777 888 999',
     trackingCode: 'CZ2023438512',
     history: [
@@ -49,10 +66,11 @@ const sampleOrders: Order[] = [
     status: 'Na cestě',
     estimatedTime: '10:15 - 11:00',
     desc: 'Oblečení, 1.5kg, Standardní doručení',
-    recipient: 'Marie Svobodová',
-    address: 'Masarykova 45, Brno, 602 00',
-    phoneNumber: '+420 601 234 567',
-    trackingCode: 'CZ2023297165',
+    userId: 'user456',
+    address: 'Masarykova 45, Brno',
+    postal: '602 00',
+    weight: 1.5,
+    size: { x: 30, y: 20, z: 10 },
     history: [
       { date: '25.3.2025 14:22', status: 'Zásilka přijata do systému', location: 'Depo Praha' },
       { date: '27.3.2025 08:35', status: 'Zásilka opustila třídící centrum', location: 'Praha' },
@@ -64,11 +82,12 @@ const sampleOrders: Order[] = [
     title: 'Zásilka #8562 - Ostrava',
     status: 'Doručeno',
     estimatedTime: 'Doručeno 9:45',
-    desc: 'Dokumenty, 0.5kg, Expresní doručení',
-    recipient: 'Pavel Horák',
-    address: 'Stodolní 15, Ostrava, 702 00',
-    phoneNumber: '+420 723 456 789',
-    trackingCode: 'CZ2023856289',
+    desc: 'Dokumenty, Expresní doručení',
+    userId: 'user789',
+    address: 'Stodolní 15, Ostrava',
+    postal: '702 00',
+    weight: 0.5,
+    size: { x: 25, y: 15, z: 5 },
     history: [
       { date: '24.3.2025 10:10', status: 'Zásilka přijata do systému', location: 'Depo Praha' },
       { date: '25.3.2025 06:20', status: 'Zásilka opustila třídící centrum', location: 'Praha' },
@@ -81,11 +100,12 @@ const sampleOrders: Order[] = [
     title: 'Balík #6723 - Plzeň',
     status: 'Zpracovává se',
     estimatedTime: 'Zítra 8:00 - 12:00',
-    desc: 'Knihy, 4.8kg, Standardní doručení',
-    recipient: 'Tereza Černá',
-    address: 'Americká 38, Plzeň, 301 00',
-    phoneNumber: '+420 776 123 458',
-    trackingCode: 'CZ2023672354',
+    desc: 'Knihy, Standardní doručení',
+    userId: 'user101',
+    address: 'Americká 38, Plzeň',
+    postal: '301 00',
+    weight: 4.8,
+    size: { x: 35, y: 25, z: 15 },
     history: [
       { date: '29.3.2025 16:45', status: 'Zásilka přijata do systému', location: 'Depo Praha' },
       { date: '30.3.2025 05:30', status: 'Zásilka se zpracovává', location: 'Praha' }
@@ -96,11 +116,12 @@ const sampleOrders: Order[] = [
     title: 'Zásilka #3159 - Liberec',
     status: 'Čeká na vyzvednutí',
     estimatedTime: 'Do 18:00',
-    desc: 'Dárkový balíček, 1.2kg, Večerní doručení',
-    recipient: 'Petr Malý',
-    address: 'Pražská 16, Liberec, 460 01',
-    phoneNumber: '+420 728 987 654',
-    trackingCode: 'CZ2023315912',
+    desc: 'Dárkový balíček, Večerní doručení',
+    userId: 'user202',
+    address: 'Pražská 16, Liberec',
+    postal: '460 01',
+    weight: 1.2,
+    size: { x: 20, y: 15, z: 10 },
     history: [
       { date: '27.3.2025 09:15', status: 'Zásilka přijata do systému', location: 'Depo Praha' },
       { date: '28.3.2025 11:40', status: 'Zásilka opustila třídící centrum', location: 'Praha' },
@@ -158,7 +179,6 @@ export default function OrderDetail() {
           headerTitleStyle: {
             fontFamily: 'Outfit',
           },
-          // Remove the custom headerLeft since it causes duplicate back buttons
         }} 
       />
       <View style={styles.container}>
@@ -173,30 +193,54 @@ export default function OrderDetail() {
             <Text style={styles.description}>{order.desc}</Text>
           </View>
 
-          {/* Tracking info */}
+          {/* Package details */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Informace o sledování</Text>
+            <Text style={styles.sectionTitle}>Informace o zásilce</Text>
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Sledovací kód:</Text>
-              <Text style={styles.infoValue}>{order.trackingCode}</Text>
+              <Text style={styles.infoLabel}>Hmotnost:</Text>
+              <Text style={styles.infoValue}>{order.weight} kg</Text>
             </View>
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Rozměry:</Text>
+              <Text style={styles.infoValue}>{order.size.x} x {order.size.y} x {order.size.z} cm</Text>
+            </View>
+            {order.trackingCode && (
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>Sledovací kód:</Text>
+                <Text style={styles.infoValue}>{order.trackingCode}</Text>
+              </View>
+            )}
           </View>
 
           {/* Recipient info */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Informace o příjemci</Text>
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Příjemce:</Text>
-              <Text style={styles.infoValue}>{order.recipient}</Text>
-            </View>
+            {order.recipient && (
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>Příjemce:</Text>
+                <Text style={styles.infoValue}>{order.recipient}</Text>
+              </View>
+            )}
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>Adresa:</Text>
               <Text style={styles.infoValue}>{order.address}</Text>
             </View>
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Telefon:</Text>
-              <Text style={styles.infoValue}>{order.phoneNumber}</Text>
+              <Text style={styles.infoLabel}>PSČ:</Text>
+              <Text style={styles.infoValue}>{order.postal}</Text>
             </View>
+            {order.phoneNumber && (
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>Telefon:</Text>
+                <Text style={styles.infoValue}>{order.phoneNumber}</Text>
+              </View>
+            )}
+            {order.gps && (
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>GPS:</Text>
+                <Text style={styles.infoValue}>{order.gps}</Text>
+              </View>
+            )}
           </View>
 
           {/* Delivery history */}
@@ -215,14 +259,23 @@ export default function OrderDetail() {
             ))}
           </View>
 
-          {/* Action buttons */}
+          {/* Action buttons - show different buttons based on user role and order status */}
           <View style={styles.actionSection}>
-            <Pressable style={styles.actionButton}>
+            <Pressable style={styles.actionButton} onPress={() => {
+              // Navigate to map view with GPS coordinates
+              if (order.gps) {
+                // Implementation could open maps app or navigate to map screen
+                Alert.alert("Navigace", `Navigovat na adresu: ${order.address}`);
+              }
+            }}>
               <MaterialIcons name="map" size={24} color="white" />
-              <Text style={styles.actionButtonText}>Sledovat doručení</Text>
+              <Text style={styles.actionButtonText}>Zobrazit na mapě</Text>
             </Pressable>
             
-            <Pressable style={styles.actionButton}>
+            <Pressable style={styles.actionButton} onPress={() => {
+              // Implementation to contact support
+              Alert.alert("Podpora", "Kontaktní informace podpory");
+            }}>
               <MaterialIcons name="support-agent" size={24} color="white" />
               <Text style={styles.actionButtonText}>Kontaktovat podporu</Text>
             </Pressable>
