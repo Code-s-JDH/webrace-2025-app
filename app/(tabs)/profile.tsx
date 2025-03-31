@@ -28,11 +28,12 @@ export default function ProfileScreen() {
   const fetchUserProfile = async () => {
     try {
       setLoading(true);
-      const response = await fetchWithAuth(`${API_URL}profile`);
+      const response = await fetchWithAuth(`${API_URL}auth/user/id`);
       const result = await response.json();
       
       if (result.success && result.data) {
         setProfile(result.data);
+        console.log('Profile data:', result.data);
       } else {
         Alert.alert('Error', 'Nepodařilo se načíst profil');
       }

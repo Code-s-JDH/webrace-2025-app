@@ -1,8 +1,10 @@
-import { View, Text, StyleSheet, ScrollView, Pressable, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, Platform, TextInput, Alert, ActivityIndicator } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { useLocalSearchParams, Stack, router } from 'expo-router';
-import { BACKGROUND_COLOR, BLUE_COLOR, MAGENTA_COLOR, TEXT_COLOR } from '../constats';
+import { BACKGROUND_COLOR, BLUE_COLOR, MAGENTA_COLOR, TEXT_COLOR, API_URL } from '../constats';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useAuth } from '@/context/AuthContext';
+import { fetchWithAuth } from '@/middleware/authMiddleware';
 
 // Define types for your data
 type HistoryEvent = {
@@ -135,6 +137,12 @@ export default function OrderDetail() {
   const { id } = useLocalSearchParams();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
+  const [newStatus, setNewStatus] = useState('');
+  const [newLocation, setNewLocation] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const { user } = useAuth();
+  
+  const isCourier = user?.role === 'courier';
 
   useEffect(() => {
     // Find the order with the matching ID
@@ -165,6 +173,60 @@ export default function OrderDetail() {
       </View>
     );
   }
+
+  const addHistoryEntry = async () => {
+    if (!newStatus.trim() || !newLocation.trim()) {
+      Alert.alert('Chyba', 'Vyplňte prosím stav i lokaci');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const response = await fetchWithAuth(`${API_URL}orders/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          historyEvent: {
+            status: newStatus.trim(),
+            location: newLocation.trim(),
+            date: new Date().toLocaleString('cs-CZ')
+          }
+        }),
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        // Update local state with the new history entry
+        if (order) {
+          const updatedOrder = { 
+            ...order,
+            history: [
+              ...order.history,
+              {
+                date: new Date().toLocaleString('cs-CZ'),
+                status: newStatus.trim(),
+                location: newLocation.trim()
+              }
+            ]
+          };
+          setOrder(updatedOrder);
+        }
+        
+        // Clear the form
+        setNewStatus('');
+        setNewLocation('');
+        
+        Alert.alert('Úspěch', 'Historie zásilky byla aktualizována');
+      } else {
+        Alert.alert('Chyba', result.message || 'Nepodařilo se aktualizovat historii zásilky');
+      }
+    } catch (error) {
+      console.error('Error updating order history:', error);
+      Alert.alert('Chyba', 'Nepodařilo se aktualizovat historii zásilky');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <>
@@ -280,6 +342,48 @@ export default function OrderDetail() {
               <Text style={styles.actionButtonText}>Kontaktovat podporu</Text>
             </Pressable>
           </View>
+          
+          {/* Add history entry form for couriers */}
+          {isCourier && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Přidat záznam do historie</Text>
+              
+              <Text style={styles.formLabel}>Stav zásilky:</Text>
+              <TextInput 
+                style={styles.input}
+                value={newStatus}
+                onChangeText={setNewStatus}
+                placeholder="Např. Zásilka doručena"
+                placeholderTextColor="#9BA1A6"
+                editable={!submitting}
+              />
+              
+              <Text style={styles.formLabel}>Lokace:</Text>
+              <TextInput 
+                style={styles.input}
+                value={newLocation}
+                onChangeText={setNewLocation}
+                placeholder="Např. Výdejní místo Praha 1"
+                placeholderTextColor="#9BA1A6"
+                editable={!submitting}
+              />
+              
+              <Pressable 
+                style={[styles.submitButton, submitting && styles.disabledButton]}
+                onPress={addHistoryEntry}
+                disabled={submitting}
+              >
+                {submitting ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <>
+                    <MaterialIcons name="add-circle-outline" size={20} color="#FFFFFF" />
+                    <Text style={styles.submitButtonText}>Přidat záznam</Text>
+                  </>
+                )}
+              </Pressable>
+            </View>
+          )}
         </ScrollView>
       </View>
     </>
@@ -459,5 +563,41 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Outfit',
     textAlign: 'center',
+  },
+  formLabel: {
+    fontSize: 16,
+    color: TEXT_COLOR,
+    fontFamily: 'Outfit',
+    marginBottom: 6,
+    marginTop: 12,
+  },
+  input: {
+    backgroundColor: '#F0F2F5',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    fontFamily: 'Outfit',
+    color: TEXT_COLOR,
+    borderWidth: 1,
+    borderColor: '#E1E1E1',
+  },
+  submitButton: {
+    backgroundColor: MAGENTA_COLOR,
+    borderRadius: 8,
+    padding: 14,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  disabledButton: {
+    opacity: 0.6,
+  },
+  submitButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontFamily: 'Outfit',
+    fontWeight: 'bold',
+    marginLeft: 8,
   },
 });
