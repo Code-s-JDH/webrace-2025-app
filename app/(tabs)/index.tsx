@@ -63,7 +63,7 @@ interface ApiResponse {
 const CardItem: React.FC<Order> = ({ title, status, estimatedTime, desc, _id }) => {
   return (
     <Card style={styles.card}>
-      <Link href={{ pathname: '/oder/[id]', params: { id: _id } }}>
+      <Link href={{ pathname: '/order/[id]', params: { id: _id } }}>
         <Card.Content style={styles.cardContent}>
           <View>
             <Text style={styles.title}>{title}</Text>
