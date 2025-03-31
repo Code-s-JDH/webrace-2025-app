@@ -7,6 +7,7 @@ import { useEffect } from 'react';
 import 'react-native-reanimated';
 import { AuthProvider } from '@/context/AuthContext';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { BACKGROUND_COLOR, TEXT_COLOR } from './constats';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -29,10 +30,29 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack>
+        <Stack
+          screenOptions={{
+            headerStyle: {
+              backgroundColor: BACKGROUND_COLOR,
+            },
+            headerTintColor: TEXT_COLOR,
+            headerTitleStyle: {
+              fontFamily: 'Outfit',
+            },
+          }}
+        >
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="login" options={{ headerShown: false }} />
+          <Stack.Screen 
+            name="order/[id]" 
+            options={{ 
+              headerShown: true,
+              headerTitle: "Detail zásilky",
+              headerBackButtonDisplayMode: "minimal",
+            }} 
+          />
           <Stack.Screen name="+not-found" />
+          <Stack.Screen name="scanner" options={{ headerShown: true, headerTitle: "Skenování kódu" }} />
         </Stack>
         <StatusBar style="auto" />
       </ThemeProvider>

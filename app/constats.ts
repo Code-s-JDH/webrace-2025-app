@@ -1,4 +1,4 @@
-export const API_URL = 'http://172.20.10.9:3000/api/v2/';
+export const API_URL = 'http://172.20.10.9:3000/v1/';
 export const BACKGROUND_COLOR = '#FCFCFD';
 export const CARD_COLOR = '#00000080';
 export const TEXT_COLOR = '#0D1218';

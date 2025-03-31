@@ -2,7 +2,7 @@ import { Image, StyleSheet, View, FlatList, Text, Pressable } from 'react-native
 import React, { useEffect, useState } from 'react';
 import { Card } from 'react-native-paper';
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
-import { API_URL, BACKGROUND_COLOR, BLUE_COLOR, MAGENTA_COLOR } from '../constats';
+import { API_URL, BACKGROUND_COLOR, BLUE_COLOR, MAGENTA_COLOR, TEXT_COLOR } from '../constats';
 import { Link } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -17,6 +17,45 @@ interface Order {
   desc: string;
 }
 
+// Sample hardcoded delivery/package data
+const sampleOrders: Order[] = [
+  {
+    _id: '1',
+    title: 'Balík #4385 - Praha',
+    status: 'Připraveno k vyzvednutí',
+    estimatedTime: '14:30 - 15:00',
+    desc: 'Elektronika, 3.2kg, Prioritní doručení'
+  },
+  {
+    _id: '2',
+    title: 'Balík #2971 - Brno',
+    status: 'Na cestě',
+    estimatedTime: '10:15 - 11:00',
+    desc: 'Oblečení, 1.5kg, Standardní doručení'
+  },
+  {
+    _id: '3',
+    title: 'Zásilka #8562 - Ostrava',
+    status: 'Doručeno',
+    estimatedTime: 'Doručeno 9:45',
+    desc: 'Dokumenty, 0.5kg, Expresní doručení'
+  },
+  {
+    _id: '4',
+    title: 'Balík #6723 - Plzeň',
+    status: 'Zpracovává se',
+    estimatedTime: 'Zítra 8:00 - 12:00',
+    desc: 'Knihy, 4.8kg, Standardní doručení'
+  },
+  {
+    _id: '5',
+    title: 'Zásilka #3159 - Liberec',
+    status: 'Čeká na vyzvednutí',
+    estimatedTime: 'Do 18:00',
+    desc: 'Dárkový balíček, 1.2kg, Večerní doručení'
+  }
+];
+
 interface ApiResponse {
   data: Order[];
 }
@@ -24,7 +63,7 @@ interface ApiResponse {
 const CardItem: React.FC<Order> = ({ title, status, estimatedTime, desc, _id }) => {
   return (
     <Card style={styles.card}>
-      <Link href={{ pathname: '/oder/[id]', params: { id: _id } }}>
+      <Link href={{ pathname: '/order/[id]', params: { id: _id } }}>
         <Card.Content style={styles.cardContent}>
           <View>
             <Text style={styles.title}>{title}</Text>
@@ -41,7 +80,8 @@ const CardItem: React.FC<Order> = ({ title, status, estimatedTime, desc, _id }) 
 };
 
 const HomeScreen: React.FC = () => {
-  const [data, setData] = useState<Order[]>([]);
+  // Initialize with sample data
+  const [data, setData] = useState<Order[]>(sampleOrders);
   const [isLoading, setIsLoading] = useState(false);
   const { logout } = useAuth();
 
@@ -56,12 +96,13 @@ const HomeScreen: React.FC = () => {
         }
       } catch (error) {
         console.error('Error fetching orders data:', error);
+        // Fallback to sample data on error
+        setData(sampleOrders);
       } finally {
         setIsLoading(false);
       }
     };
-
-    fetchData();
+    setTimeout(() => setIsLoading(false), 500); // Simulate brief loading
   }, []);
 
   return (
@@ -130,12 +171,15 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: 'white',
+    color: TEXT_COLOR,
     fontFamily: 'Outfit',
     marginBottom: 4,
   },
   statusRow: {
     flexDirection: 'row',
+    width: '100%',
+    alignItems: 'center',
+    paddingVertical: 4,
     justifyContent: 'space-between',
     marginBottom: 4,
   },
@@ -151,7 +195,7 @@ const styles = StyleSheet.create({
   },
   description: {
     fontSize: 14,
-    color: 'white',
+    color: TEXT_COLOR,
     fontFamily: 'Outfit',
   },
   center: {

@@ -1,8 +1,11 @@
 import { useState } from 'react';
-import { View, TextInput, Button, StyleSheet, Alert, ActivityIndicator, Text } from 'react-native';
+import { View, TextInput, Button, StyleSheet, Alert, ActivityIndicator, Text, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
-import { BACKGROUND_COLOR, TEXT_COLOR, API_URL } from './constats';
+import { BACKGROUND_COLOR, TEXT_COLOR, API_URL, BLUE_COLOR } from './constats';
+
+// Test token for development purposes
+const TEST_TOKEN = "test_development_token_12345";
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -13,13 +16,13 @@ export default function Login() {
   const handleLogin = async () => {
     // Input validation
     if (!email.trim() || !password.trim()) {
-      Alert.alert('Error', 'Vyplňte uživatelské jméno a heslo');
+      Alert.alert('Error', 'Vyplňte email a heslo');
       return;
     }
 
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_URL}login`, {
+      const response = await fetch(`${API_URL}auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -54,6 +57,20 @@ export default function Login() {
     }
   };
 
+  const handleTestLogin = async () => {
+    setIsLoading(true);
+    try {
+      // Use the test token directly
+      await login(TEST_TOKEN);
+      router.replace('/(tabs)');
+    } catch (error) {
+      console.error('Test login error:', error);
+      Alert.alert('Error', 'Nepodařilo se přihlásit s testovacím tokenem');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Přihlášení</Text>
@@ -78,7 +95,16 @@ export default function Login() {
       {isLoading ? (
         <ActivityIndicator size="large" color={TEXT_COLOR} />
       ) : (
-        <Button title="přihlásit se"  onPress={handleLogin} />
+        <>
+          <Button title="přihlásit se" onPress={handleLogin} />
+          <TouchableOpacity 
+            style={styles.testLoginButton} 
+            onPress={handleTestLogin}
+            disabled={isLoading}
+          >
+            <Text style={styles.testLoginText}>Přihlásit se s testovacím tokenem</Text>
+          </TouchableOpacity>
+        </>
       )}
     </View>
   );
@@ -108,5 +134,17 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     fontFamily: 'Outfit',
     textAlign: 'center',
+  },
+  testLoginButton: {
+    marginTop: 20,
+    backgroundColor: BLUE_COLOR,
+    padding: 12,
+    borderRadius: 4,
+    alignItems: 'center',
+  },
+  testLoginText: {
+    color: 'white',
+    fontFamily: 'Outfit',
+    fontWeight: '500',
   },
 });
