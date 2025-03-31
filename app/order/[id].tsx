@@ -37,106 +37,11 @@ type Order = {
   trackingCode?: string; // If this exists in your model
 };
 
-// Sample hardcoded delivery/package data (same as in index.tsx)
-const sampleOrders: Order[] = [
-  {
-    _id: '1',
-    title: 'Balík #4385 - Praha',
-    status: 'Připraveno k vyzvednutí',
-    estimatedTime: '14:30 - 15:00',
-    desc: 'Elektronika, Prioritní doručení',
-    userId: 'user123',
-    courierId: 'courier456',
-    address: 'Dlouhá 123, Praha 1',
-    postal: '110 00',
-    gps: '50.0880400,14.4207600',
-    weight: 3.2,
-    size: { x: 40, y: 30, z: 20 },
-    recipient: 'Jan Novák',
-    phoneNumber: '+420 777 888 999',
-    trackingCode: 'CZ2023438512',
-    history: [
-      { date: '26.3.2025 08:32', status: 'Zásilka přijata do systému', location: 'Depo Brno' },
-      { date: '27.3.2025 14:15', status: 'Zásilka opustila třídící centrum', location: 'Brno' },
-      { date: '28.3.2025 06:45', status: 'Zásilka dorazila do cílového depa', location: 'Praha' },
-      { date: '30.3.2025 09:20', status: 'Připraveno k vyzvednutí', location: 'Výdejní místo Praha 1' }
-    ]
-  },
-  {
-    _id: '2',
-    title: 'Balík #2971 - Brno',
-    status: 'Na cestě',
-    estimatedTime: '10:15 - 11:00',
-    desc: 'Oblečení, 1.5kg, Standardní doručení',
-    userId: 'user456',
-    address: 'Masarykova 45, Brno',
-    postal: '602 00',
-    weight: 1.5,
-    size: { x: 30, y: 20, z: 10 },
-    history: [
-      { date: '25.3.2025 14:22', status: 'Zásilka přijata do systému', location: 'Depo Praha' },
-      { date: '27.3.2025 08:35', status: 'Zásilka opustila třídící centrum', location: 'Praha' },
-      { date: '29.3.2025 05:15', status: 'Zásilka na cestě', location: 'Směr Brno' }
-    ]
-  },
-  {
-    _id: '3',
-    title: 'Zásilka #8562 - Ostrava',
-    status: 'Doručeno',
-    estimatedTime: 'Doručeno 9:45',
-    desc: 'Dokumenty, Expresní doručení',
-    userId: 'user789',
-    address: 'Stodolní 15, Ostrava',
-    postal: '702 00',
-    weight: 0.5,
-    size: { x: 25, y: 15, z: 5 },
-    history: [
-      { date: '24.3.2025 10:10', status: 'Zásilka přijata do systému', location: 'Depo Praha' },
-      { date: '25.3.2025 06:20', status: 'Zásilka opustila třídící centrum', location: 'Praha' },
-      { date: '26.3.2025 14:40', status: 'Zásilka dorazila do cílového depa', location: 'Ostrava' },
-      { date: '27.3.2025 09:45', status: 'Zásilka doručena', location: 'Ostrava' }
-    ]
-  },
-  {
-    _id: '4',
-    title: 'Balík #6723 - Plzeň',
-    status: 'Zpracovává se',
-    estimatedTime: 'Zítra 8:00 - 12:00',
-    desc: 'Knihy, Standardní doručení',
-    userId: 'user101',
-    address: 'Americká 38, Plzeň',
-    postal: '301 00',
-    weight: 4.8,
-    size: { x: 35, y: 25, z: 15 },
-    history: [
-      { date: '29.3.2025 16:45', status: 'Zásilka přijata do systému', location: 'Depo Praha' },
-      { date: '30.3.2025 05:30', status: 'Zásilka se zpracovává', location: 'Praha' }
-    ]
-  },
-  {
-    _id: '5',
-    title: 'Zásilka #3159 - Liberec',
-    status: 'Čeká na vyzvednutí',
-    estimatedTime: 'Do 18:00',
-    desc: 'Dárkový balíček, Večerní doručení',
-    userId: 'user202',
-    address: 'Pražská 16, Liberec',
-    postal: '460 01',
-    weight: 1.2,
-    size: { x: 20, y: 15, z: 10 },
-    history: [
-      { date: '27.3.2025 09:15', status: 'Zásilka přijata do systému', location: 'Depo Praha' },
-      { date: '28.3.2025 11:40', status: 'Zásilka opustila třídící centrum', location: 'Praha' },
-      { date: '29.3.2025 14:20', status: 'Zásilka dorazila do cílového depa', location: 'Liberec' },
-      { date: '30.3.2025 10:35', status: 'Připraveno k vyzvednutí', location: 'Výdejní místo Liberec' }
-    ]
-  }
-];
-
 export default function OrderDetail() {
   const { id } = useLocalSearchParams();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [newStatus, setNewStatus] = useState('');
   const [newLocation, setNewLocation] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -145,34 +50,28 @@ export default function OrderDetail() {
   const isCourier = user?.role === 'courier';
 
   useEffect(() => {
-    // Find the order with the matching ID
-    const foundOrder = sampleOrders.find(o => o._id === id);
-    
-    // Simulate loading
-    setTimeout(() => {
-      setOrder(foundOrder || null);
-      setLoading(false);
-    }, 500);
+    fetchOrderData();
   }, [id]);
 
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>Načítání...</Text>
-      </View>
-    );
-  }
-
-  if (!order) {
-    return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>Zásilka nebyla nalezena</Text>
-        <Pressable style={styles.button} onPress={() => router.back()}>
-          <Text style={styles.buttonText}>Zpět na přehled</Text>
-        </Pressable>
-      </View>
-    );
-  }
+  const fetchOrderData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetchWithAuth(`${API_URL}orders/${id}`);
+      const result = await response.json();
+      
+      if (result.success && result.data) {
+        setOrder(result.data);
+      } else {
+        setError(result.message || 'Nepodařilo se načíst data zásilky');
+      }
+    } catch (error) {
+      console.error('Error fetching order details:', error);
+      setError('Nepodařilo se načíst data zásilky');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const addHistoryEntry = async () => {
     if (!newStatus.trim() || !newLocation.trim()) {
@@ -228,6 +127,108 @@ export default function OrderDetail() {
     }
   };
 
+  const updateOrderStatus = async (newStatus: string) => {
+    setSubmitting(true);
+    try {
+      const response = await fetchWithAuth(`${API_URL}orders/${id}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: newStatus }),
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        // Update the local order with new status
+        if (order) {
+          const updatedOrder = { 
+            ...order,
+            status: newStatus,
+            history: [
+              ...order.history,
+              {
+                date: new Date().toLocaleString('cs-CZ'),
+                status: `Stav změněn na: ${newStatus}`,
+                location: 'Aktualizováno kurýrem'
+              }
+            ]
+          };
+          setOrder(updatedOrder);
+        }
+        
+        Alert.alert('Úspěch', `Stav zásilky byl změněn na: ${newStatus}`);
+      } else {
+        Alert.alert('Chyba', result.message || 'Nepodařilo se aktualizovat stav zásilky');
+      }
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      Alert.alert('Chyba', 'Nepodařilo se aktualizovat stav zásilky');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={TEXT_COLOR} />
+        <Text style={styles.loadingText}>Načítání zásilky...</Text>
+      </View>
+    );
+  }
+
+  if (error || !order) {
+    return (
+      <View style={styles.errorContainer}>
+        <MaterialIcons name="error-outline" size={48} color={MAGENTA_COLOR} />
+        <Text style={styles.errorText}>{error || 'Zásilka nebyla nalezena'}</Text>
+        <Pressable style={styles.button} onPress={() => router.back()}>
+          <Text style={styles.buttonText}>Zpět na přehled</Text>
+        </Pressable>
+        <Pressable style={[styles.button, styles.retryButton]} onPress={fetchOrderData}>
+          <Text style={styles.buttonText}>Zkusit znovu</Text>
+        </Pressable>
+      </View>
+    );
+  }
+
+  const renderStatusActions = () => {
+    if (!isCourier) return null;
+    
+    switch (order.status) {
+      case 'Zpracovává se':
+        return (
+          <Pressable 
+            style={[styles.statusButton, { backgroundColor: BLUE_COLOR }]}
+            onPress={() => updateOrderStatus('Na cestě')}
+            disabled={submitting}
+          >
+            <MaterialIcons name="local-shipping" size={20} color="#FFFFFF" />
+            <Text style={styles.statusButtonText}>Zahájit doručení</Text>
+          </Pressable>
+        );
+      case 'Na cestě':
+        return (
+          <Pressable 
+            style={[styles.statusButton, { backgroundColor: MAGENTA_COLOR }]}
+            onPress={() => updateOrderStatus('Doručeno')}
+            disabled={submitting}
+          >
+            <MaterialIcons name="check-circle" size={20} color="#FFFFFF" />
+            <Text style={styles.statusButtonText}>Označit jako doručeno</Text>
+          </Pressable>
+        );
+      case 'Doručeno':
+        return (
+          <View style={styles.completedStatus}>
+            <MaterialIcons name="check-circle" size={24} color="#4CAF50" />
+            <Text style={styles.completedStatusText}>Zásilka byla doručena</Text>
+          </View>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <>
       <Stack.Screen 
@@ -253,6 +254,8 @@ export default function OrderDetail() {
               <Text style={styles.estimatedTime}>{order.estimatedTime}</Text>
             </View>
             <Text style={styles.description}>{order.desc}</Text>
+            
+            {renderStatusActions()}
           </View>
 
           {/* Package details */}
@@ -308,34 +311,41 @@ export default function OrderDetail() {
           {/* Delivery history */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Historie zásilky</Text>
-            {order.history.map((event, index) => (
-              <View key={index} style={styles.historyItem}>
-                <View style={styles.historyDot} />
-                <View style={styles.historyContent}>
-                  <Text style={styles.historyDate}>{event.date}</Text>
-                  <Text style={styles.historyStatus}>{event.status}</Text>
-                  <Text style={styles.historyLocation}>{event.location}</Text>
+            {order.history && order.history.length > 0 ? (
+              order.history.map((event, index) => (
+                <View key={index} style={styles.historyItem}>
+                  <View style={styles.historyDot} />
+                  <View style={styles.historyContent}>
+                    <Text style={styles.historyDate}>{event.date}</Text>
+                    <Text style={styles.historyStatus}>{event.status}</Text>
+                    <Text style={styles.historyLocation}>{event.location}</Text>
+                  </View>
+                  {index < order.history.length - 1 && <View style={styles.historyLine} />}
                 </View>
-                {index < order.history.length - 1 && <View style={styles.historyLine} />}
-              </View>
-            ))}
+              ))
+            ) : (
+              <Text style={styles.noHistoryText}>Žádná historie není k dispozici</Text>
+            )}
           </View>
 
           {/* Action buttons - show different buttons based on user role and order status */}
           <View style={styles.actionSection}>
-            <Pressable style={styles.actionButton} onPress={() => {
-              // Navigate to map view with GPS coordinates
-              if (order.gps) {
-                // Implementation could open maps app or navigate to map screen
-                Alert.alert("Navigace", `Navigovat na adresu: ${order.address}`);
-              }
-            }}>
+            <Pressable 
+              style={[styles.actionButton, !order.gps && styles.disabledButton]} 
+              onPress={() => {
+                if (order.gps) {
+                  Alert.alert("Navigace", `Navigovat na adresu: ${order.address}`);
+                } else {
+                  Alert.alert("Info", "Pro tuto zásilku nejsou dostupné GPS souřadnice");
+                }
+              }}
+              disabled={!order.gps}
+            >
               <MaterialIcons name="map" size={24} color="white" />
               <Text style={styles.actionButtonText}>Zobrazit na mapě</Text>
             </Pressable>
             
             <Pressable style={styles.actionButton} onPress={() => {
-              // Implementation to contact support
               Alert.alert("Podpora", "Kontaktní informace podpory");
             }}>
               <MaterialIcons name="support-agent" size={24} color="white" />
@@ -405,6 +415,7 @@ const styles = StyleSheet.create({
     color: TEXT_COLOR,
     fontSize: 18,
     fontFamily: 'Outfit',
+    marginTop: 16,
   },
   errorContainer: {
     flex: 1,
@@ -417,27 +428,14 @@ const styles = StyleSheet.create({
     color: TEXT_COLOR,
     fontSize: 18,
     fontFamily: 'Outfit',
+    marginTop: 12,
     marginBottom: 20,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-  },
-  backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  backButtonText: {
-    color: TEXT_COLOR,
-    fontSize: 16,
-    fontFamily: 'Outfit',
-    marginLeft: 8,
+    textAlign: 'center',
   },
   section: {
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    borderBottomColor: 'rgba(0, 0, 0, 0.1)',
   },
   title: {
     fontSize: 24,
@@ -467,6 +465,36 @@ const styles = StyleSheet.create({
     color: TEXT_COLOR,
     fontFamily: 'Outfit',
     marginTop: 8,
+    marginBottom: 12,
+  },
+  statusButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 12,
+  },
+  statusButtonText: {
+    color: '#FFFFFF',
+    fontFamily: 'Outfit',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginLeft: 8,
+  },
+  completedStatus: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 12,
+    backgroundColor: '#E8F5E9',
+    padding: 12,
+    borderRadius: 8,
+  },
+  completedStatusText: {
+    color: '#4CAF50',
+    fontFamily: 'Outfit',
+    fontSize: 16,
+    marginLeft: 8,
   },
   sectionTitle: {
     fontSize: 18,
@@ -531,6 +559,14 @@ const styles = StyleSheet.create({
     color: BLUE_COLOR,
     fontFamily: 'Outfit',
   },
+  noHistoryText: {
+    color: TEXT_COLOR,
+    fontFamily: 'Outfit',
+    fontSize: 16,
+    fontStyle: 'italic',
+    textAlign: 'center',
+    marginVertical: 16,
+  },
   actionSection: {
     padding: 16,
     flexDirection: 'row',
@@ -557,6 +593,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     borderRadius: 8,
     marginTop: 16,
+  },
+  retryButton: {
+    backgroundColor: BLUE_COLOR,
+    marginTop: 8,
   },
   buttonText: {
     color: 'white',

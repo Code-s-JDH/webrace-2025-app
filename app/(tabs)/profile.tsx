@@ -148,6 +148,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginTop: 10,
     fontFamily: 'Outfit',
+    color: TEXT_COLOR,
   },
   email: {
     fontSize: 16,
@@ -156,27 +157,28 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit',
   },
   roleBadge: {
-    backgroundColor: BLUE_COLOR,
+    backgroundColor: MAGENTA_COLOR,
     paddingHorizontal: 16,
     paddingVertical: 4,
     borderRadius: 20,
     marginTop: 10,
   },
   roleText: {
-    color: '#FFF',
+    color: BACKGROUND_COLOR,
     fontWeight: 'bold',
     fontFamily: 'Outfit',
   },
   menuSection: {
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#E1E1E1',
+    borderColor: TEXT_COLOR,
     borderRadius: 8,
     padding: 10,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: TEXT_COLOR,
     marginBottom: 10,
     fontFamily: 'Outfit',
   },
@@ -185,12 +187,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#E1E1E1',
+    borderBottomColor: TEXT_COLOR,
   },
   menuItemText: {
     marginLeft: 15,
     fontSize: 16,
     fontFamily: 'Outfit',
+    color: TEXT_COLOR,
   },
   logoutButton: {
     marginTop: 20,
@@ -200,7 +203,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logoutText: {
-    color: '#FFF',
+    color: BACKGROUND_COLOR,
     fontSize: 16,
     fontWeight: 'bold',
     fontFamily: 'Outfit',
