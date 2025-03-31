@@ -63,7 +63,7 @@ interface ApiResponse {
 const CardItem: React.FC<Order> = ({ title, status, estimatedTime, desc, _id }) => {
   return (
     <Card style={styles.card}>
-      <Link href={{ pathname: '/order/[id]', params: { id: _id } }}>
+      <Link href={{ pathname: '/oder/[id]', params: { id: _id } }}>
         <Card.Content style={styles.cardContent}>
           <View>
             <Text style={styles.title}>{title}</Text>
@@ -107,22 +107,18 @@ const HomeScreen: React.FC = () => {
 
   return (
     <View style={{ flex: 1 }}>
+      {/* <View style={styles.header}>
+        const { user } = useAuth();
+        {user?.role === 'courier' && (
+          <Text style={{ color: MAGENTA_COLOR, fontFamily: 'Outfit', fontSize: 16 }}>
+            přihlášen jako kurýr
+          </Text>
+        )}
+      </View> */}
       <View style={styles.header}>
-        <View style={styles.headerButtons}>
-          <MaterialIcons
-            name="qr-code-scanner"
-            size={24}
-            color="white"
-            style={styles.scannerIcon}
-            onPress={() => router.push('/scanner')}
-          />
-          <Pressable
-            style={styles.logoutButton}
-            onPress={logout}
-          >
-            <Text style={styles.logoutButtonText}>Odhlásit se</Text>
-          </Pressable>
-        </View>
+          <Text style={{ color: MAGENTA_COLOR, fontFamily: 'Outfit', fontSize: 24 }}>
+            přihlášen jako kurýr
+          </Text>
       </View>
       <View style={styles.container}>
         {isLoading ? (

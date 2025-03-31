@@ -43,13 +43,13 @@ export default function RootLayout() {
         >
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="login" options={{ headerShown: false }} />
-          <Stack.Screen 
-            name="order/[id]" 
-            options={{ 
+          <Stack.Screen
+            name="order/[id]"
+            options={{
               headerTitle: "Detail zásilky",
-              // Use the system back button by default
+              headerBackButtonDisplayMode: 'minimal',
               headerBackVisible: true,
-            }} 
+            }}
           />
           <Stack.Screen name="+not-found" />
         </Stack>

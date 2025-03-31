@@ -4,8 +4,28 @@ import { useLocalSearchParams, Stack, router } from 'expo-router';
 import { BACKGROUND_COLOR, BLUE_COLOR, MAGENTA_COLOR, TEXT_COLOR } from '../constats';
 import { MaterialIcons } from '@expo/vector-icons';
 
+// Define types for your data
+type HistoryEvent = {
+  date: string;
+  status: string;
+  location: string;
+};
+
+type Order = {
+  _id: string;
+  title: string;
+  status: string;
+  estimatedTime: string;
+  desc: string;
+  recipient: string;
+  address: string;
+  phoneNumber: string;
+  trackingCode: string;
+  history: HistoryEvent[];
+};
+
 // Sample hardcoded delivery/package data (same as in index.tsx)
-const sampleOrders = [
+const sampleOrders: Order[] = [
   {
     _id: '1',
     title: 'Balík #4385 - Praha',
@@ -92,7 +112,7 @@ const sampleOrders = [
 
 export default function OrderDetail() {
   const { id } = useLocalSearchParams();
-  const [order, setOrder] = useState(null);
+  const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -101,7 +121,7 @@ export default function OrderDetail() {
     
     // Simulate loading
     setTimeout(() => {
-      setOrder(foundOrder);
+      setOrder(foundOrder || null);
       setLoading(false);
     }, 500);
   }, [id]);
@@ -179,6 +199,21 @@ export default function OrderDetail() {
             </View>
           </View>
 
+          {/* Delivery history */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Historie zásilky</Text>
+            {order.history.map((event, index) => (
+              <View key={index} style={styles.historyItem}>
+                <View style={styles.historyDot} />
+                <View style={styles.historyContent}>
+                  <Text style={styles.historyDate}>{event.date}</Text>
+                  <Text style={styles.historyStatus}>{event.status}</Text>
+                  <Text style={styles.historyLocation}>{event.location}</Text>
+                </View>
+                {index < order.history.length - 1 && <View style={styles.historyLine} />}
+              </View>
+            ))}
+          </View>
 
           {/* Action buttons */}
           <View style={styles.actionSection}>
